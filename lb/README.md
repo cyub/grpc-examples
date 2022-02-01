@@ -14,6 +14,7 @@ make start-minikube-dashboard # 启动minikube-dashboard
 eval `minikube -p minikube docker-env` # 设置docker环境
 make build-server-image # 构建grpc server镜像
 make build-client-image # 构建grpc client镜像
+make create-server-deployment # 构建grpc server deployment，即创建grpc server pods
 ```
 
 ### clusterIP service模式
@@ -44,6 +45,18 @@ make client-headless-log # 查看日志
 1. grpc client连接k8s headless service时候，可以直接使用k8s headless服务名称(grpc-lb-example-greeter-server-headless-svc)，而不必在k8s服务名称后面再带上namespace(grpc-lb-example-greeter-server-headless-svc.grpc-lb-example)
 2. DNS url中dns schema，由于后面省略了authority，所以一般都是三个反斜线`///`，标准格式为`dns:[//authority/]host[:port]`。
 3. 测试发现当节点scale down后，grpc client能够立马感知，scale up之后需要过几秒才能够感知。
+
+## envoy proxy 模式
+
+![](https://static.cyub.vip/images/202111/envoy-proxy.png)
+
+```
+make envoy-configmap # 创建envoy 配置文件的configmap
+make create-envoy-deployment # 创建envoy deployment
+make create-envoy-service # 创建k8s service，代理到envoy pod
+make create-client-envoy-deployment # 创建grpc client deployment，连到envoy service
+make client-envoy-log # 查看grpc client日志
+```
 
 ## 资料
 

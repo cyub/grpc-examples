@@ -46,7 +46,7 @@ create-k8s-namespace:
 create-server-deployment:
 	kubectl apply -f service/deployment-server.yml
 
-include clusterip.mk headless-service.mk
+include clusterip.mk headless-service.mk envoy-proxy.mk
 
 	
 

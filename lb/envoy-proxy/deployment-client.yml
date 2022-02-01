@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: grpc-lb-example # 指定namespace
+  name:  grpc-lb-example-greeter-client-envoy
+  labels:
+    name: grpc-lb-example-greeter-client-envoy
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: greeter-client-envoy
+  template:
+    metadata:
+      labels:
+        name: greeter-client-envoy
+    spec:
+      containers:
+      - name: greeter-client-envoy
+        image: greeter_client:1.0
+        command: ["greeter_client"]
+        env:
+        - name: SERVER_DOMAIN
+          value: envoy
+        - name: SERVER_PORT
+          value: "50053"
