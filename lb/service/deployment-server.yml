@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: grpc-lb-example # 指定namespace
+  name:  grpc-lb-example-greeter-server-svc
+  labels:
+    name: grpc-lb-example-greeter-server-svc
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      name: greeter-server
+  template:
+    metadata:
+      labels:
+        name: greeter-server
+    spec:
+      containers:
+      - name: greeter-server
+        image: greeter_server:1.0
+        command: ["greeter_server"]
+        env:
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
