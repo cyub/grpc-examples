@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: grpc-lb-example # 指定namespace
+  name:  grpc-lb-example-greeter-client-istio
+  labels:
+    name: grpc-lb-example-greeter-client-istio
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: greeter-client
+  template:
+    metadata:
+      labels:
+        name: greeter-client
+    spec:
+      containers:
+      - name: greeter-client
+        image: greeter_client:1.0
+        command: ["greeter_client"]
+        env:
+        - name: SERVER_DOMAIN
+          value: grpc-lb-example-greeter-server-istio.grpc-lb-example.svc.cluster.local
+        - name: SERVER_PORT
+          value: "50052"

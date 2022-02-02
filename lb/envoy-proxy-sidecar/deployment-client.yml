@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: grpc-lb-example # 指定namespace
+  name:  grpc-lb-example-greeter-client-envoy-sidecar
+  labels:
+    name: grpc-lb-example-greeter-client-envoy-sidecar
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: greeter-client-envoy-sidecar
+  template:
+    metadata:
+      labels:
+        name: greeter-client-envoy-sidecar
+    spec:
+      containers:
+      - name: greeter-client-envoy-sidecar
+        image: greeter_client:1.0
+        command: ["greeter_client"]
+        env:
+        - name: SERVER_DOMAIN
+          value: localhost
+        - name: SERVER_PORT
+          value: "8443" # 这里是envoy-proxy sidecard的地址
+      - name: envoy-proxy # envoy-proxy作为边车
+        image: envoyproxy/envoy:v1.21.0
+        ports:
+        - name: https
+          containerPort: 8443
+        volumeMounts:
+        - name: config
+          mountPath: /etc/envoy
+      volumes:
+      - name: config
+        configMap:
+          name: envoy-sidecar-config

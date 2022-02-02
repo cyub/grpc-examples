@@ -11,3 +11,7 @@ spec:
     protocol: TCP
     port: 50053
     targetPort: 8443
+  - name: envoy-admin
+    protocol: TCP
+    port: 60053
+    targetPort: 8090
