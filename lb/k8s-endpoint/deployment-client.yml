@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: grpc-lb-example
+  name:  grpc-lb-example-greeter-client-endpoint
+  labels:
+    name: grpc-lb-example-greeter-client-endpoint
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: greeter-client-endpoint
+  template:
+    metadata:
+      labels:
+        name: greeter-client-endpoint
+    spec:
+      serviceAccountName: endpoints-reader # 此处是必不可少的
+      containers:
+      - name: greeter-client-endpoint
+        image: greeter_client:1.0
+        command: ["greeter_client"]
+        env:
+        - name: SERVER_DOMAIN
+          # 格式: kubernetes:///service.namespace:portname
+          value: kubernetes:///grpc-lb-example-greeter-server-svc.grpc-lb-example
+        - name: SERVER_PORT
+          value: "50051" # 注意是grpc server的端口，不是grpc server的k8s clusterip servcie端口

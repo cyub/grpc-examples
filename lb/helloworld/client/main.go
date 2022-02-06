@@ -25,10 +25,10 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"strings"
 	"time"
 
 	pb "github.com/cyub/grpc-lb-example/helloworld/proto"
+	"github.com/sercand/kuberesolver/v3"
 	"google.golang.org/grpc"
 )
 
@@ -36,16 +36,15 @@ const (
 	defaultName = "world"
 )
 
+func init() {
+	kuberesolver.RegisterInCluster()
+}
+
 func main() {
 	flag.Parse()
 	domain, exists := os.LookupEnv("SERVER_DOMAIN")
 	if !exists {
 		domain = "localhost"
-	}
-
-	var dnsResolver bool
-	if strings.HasPrefix(domain, "dns://") {
-		dnsResolver = true
 	}
 
 	port, exists := os.LookupEnv("SERVER_PORT")
@@ -58,11 +57,9 @@ func main() {
 	options := []grpc.DialOption{
 		grpc.WithInsecure(),
 		grpc.WithBlock(),
+		grpc.WithDefaultServiceConfig(`{"loadBalancingPolicy":"round_robin"}`),
 	}
 
-	if dnsResolver {
-		options = append(options, grpc.WithDefaultServiceConfig(`{"loadBalancingPolicy":"round_robin"}`))
-	}
 	conn, err := grpc.Dial(target, options...)
 	if err != nil {
 		log.Fatalf("did not connect: %v", err)

@@ -28,7 +28,6 @@ make client-log # 查看日志
 ```
 
 **注意：**
-
 1. grpc client连接k8s service 时候，可直接使用k8s服务名称(grpc-lb-example-greeter-server-svc)，而不必在k8s服务名称后面再带上namespace(grpc-lb-example-greeter-server-svc.grpc-lb-example)
 2. 通过日志可以看到即使grpc server有3个POD，k8s service也只会代理到其中一个
 
@@ -50,6 +49,39 @@ make client-headless-log # 查看日志
 ## k8s endpoints API 模式
 
 ![](https://static.cyub.vip/images/202111/k8s-endpoints-service.png)
+
+k8s提供了Endpont API，通过此我们可以读取clusterIP Servie下面所有Pod的endpoint信息。一共有两个API:
+1. [read the specified Endpoints](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#read-endpoints-v1-core)
+    客户端应用时候，第一次读取。
+
+2. [watch changes to an object of kind Endpoints](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#watch-endpoints-v1-core)
+
+    watch接口，当clusterIP下面的Pod发生变化时候，才会返回内容。注意：低版本k8s使用这个独立API，高版本该API废弃，应使用第一个API，传递watch参数。
+
+
+Endpoint API使用具体说明：
+
+注意：下面的8001是`kubectl proxy`的端口，开启此命令后可以不需要任何权限校验的既可以访问任何API
+
+reader API:
+```
+curl 192.168.33.10:8001/api/v1/namespaces/grpc-lb-example/endpoints/grpc-lb-example-greeter-server-svc
+```
+
+watcher API:
+```
+curl 192.168.33.10:8001/api/v1/watch/namespaces/grpc-lb-example/endpoints/grpc-lb-example-greeter-server-svc
+```
+
+### 测试
+```
+make create-clusterrole # 创建cluster role
+make create-serviceaccount # 创建 service account
+make clusterrolebinding # 创建 cluster role binding
+make create-server-service # 创建clusterIP service
+make create-client-endpoint-deployment # 创建grpc client deployment
+make client-endpoint-log # 查看日志
+```
 
 ## envoy proxy 模式
 
@@ -112,7 +144,7 @@ Kiali依赖istio的[Prometheus Addon](https://istio.io/latest/zh/docs/tasks/obse
 kubectl apply -f https://raw.githubusercontent.com/istio/istio/release-1.12/samples/addons/prometheus.yaml
 ```
 
-## 测试
+### 测试
 
 ```
 make create-server-istio-deployment # 创建grpc server pods和 service
